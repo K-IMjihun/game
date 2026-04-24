@@ -55,7 +55,7 @@ public class GameScreen extends ScreenAdapter {
         if (Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN))  dy -= 1;
         if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT))  dx -= 1;
         if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)) dx += 1;
-        boolean attack = Gdx.input.isKeyPressed(Keys.SPACE);
+        boolean attack = false; // SWORD는 자동 공격 — Space 입력 불필요
         boolean skill  = Gdx.input.isKeyPressed(Keys.SHIFT_LEFT);
         Vector2 dir = new Vector2(dx, dy);
         if (dir.len2() > 0) dir.nor();

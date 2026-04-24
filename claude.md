@@ -244,3 +244,6 @@
   1 row 4 columns, 64x64 per frame, walk cycle 4 frames,
   character facing right, legs and arms moving,
   transparent background, dark fantasy style
+
+
+  JAVA_HOME="C:/Program Files/Java/jdk-17" ./gradlew desktop:run

@@ -12,11 +12,7 @@ public class Player {
     public final ClassType classType;
 
     private final Weapon weapon;
-    private static final float MOVE_SPEED = 150f; // px/s
-
-    // 무기 쿨다운 (틱 단위)
-    private int attackCooldown = 0;
-    private static final int ATTACK_CD_TICKS = 20;
+    private static final float MOVE_SPEED = 150f;
 
     public Player(ClassType classType) {
         this.classType = classType;
@@ -32,11 +28,9 @@ public class Player {
         // 체력 재생
         hp = Math.min(100f, hp + world.getBonusSet().healthRegenPerSec / 60f);
 
-        if (attackCooldown > 0) {
-            attackCooldown--;
-        } else if (input.attackPressed()) {
-            weapon.attack(x, y, world);
-            attackCooldown = ATTACK_CD_TICKS;
-        }
+        // 무기 틱 (공격 입력 없이 매 틱 자동 처리)
+        weapon.tick(x, y, world, input);
     }
+
+    public Weapon getWeapon() { return weapon; }
 }

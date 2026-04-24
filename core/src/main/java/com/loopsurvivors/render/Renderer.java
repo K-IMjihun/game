@@ -9,26 +9,40 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.loopsurvivors.combat.Weapon;
 import com.loopsurvivors.world.Enemy;
+import com.loopsurvivors.world.Ghost;
 import com.loopsurvivors.world.Player;
 import com.loopsurvivors.world.Projectile;
 import com.loopsurvivors.world.World;
 
 public class Renderer {
 
-    private static final int   ENEMY_DRAW_SIZE  = 48;
-    private static final int   FRAME_COLS       = 2;
-    private static final int   FRAME_ROWS       = 2;
-    private static final float FRAME_DURATION   = 0.2f;
+    // ── 몬스터 애니메이션 상수 ───────────────────────────────────
+    private static final int   ENEMY_DRAW_SIZE = 48;
+    private static final int   FRAME_COLS      = 2;
+    private static final int   FRAME_ROWS      = 2;
+    private static final float FRAME_DURATION  = 0.2f;
 
-    private final SpriteBatch batch;
+    private final SpriteBatch  batch;
     private final ShapeRenderer shape;
     private final OrthographicCamera camera;
 
+    // 텍스처
     private final Texture background;
     private final Texture monsterSheet;
+    private final Texture clockHandTex;
+
+    // 사전 계산된 TextureRegion
+    private final TextureRegion clockHandRegion;
+
+    // 몬스터 애니메이션
     private final Animation<TextureRegion> monsterAnim;
     private float stateTime = 0f;
+
+    // 시계 바늘: 1초마다 1칸(6°), 60초 = 1회전
+    private float clockElapsed = 0f;
+    private int   clockTick    = 0;  // 0~59
 
     public Renderer(SpriteBatch batch) {
         this.batch = batch;
@@ -37,7 +51,10 @@ public class Renderer {
         camera.position.set(640, 360, 0);
         camera.update();
 
-        background   = new Texture(Gdx.files.internal("background/clock/BG_clock.png"));
+        background    = new Texture(Gdx.files.internal("background/clock/BG_clock.png"));
+        clockHandTex  = new Texture(Gdx.files.internal("background/clock/BG_clock_hand.png"));
+        clockHandRegion = new TextureRegion(clockHandTex);
+
         monsterSheet = new Texture(Gdx.files.internal("monster/monster_01.png"));
         int frameW = monsterSheet.getWidth()  / FRAME_COLS;
         int frameH = monsterSheet.getHeight() / FRAME_ROWS;
@@ -48,19 +65,30 @@ public class Renderer {
     }
 
     public void render(World world) {
-        stateTime += Gdx.graphics.getDeltaTime();
+        float delta = Gdx.graphics.getDeltaTime();
+        stateTime += delta;
+
+        // ── 시계 바늘: 1초마다 1칸 스냅, 60초 = 1회전 ───────────
+        clockElapsed += delta;
+        if (clockElapsed >= 1.0f) {
+            clockElapsed -= 1.0f;
+            clockTick = (clockTick + 1) % 60;
+        }
 
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.15f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // ── 스프라이트 렌더링 (SpriteBatch) ──────────────────────
+        // ── SpriteBatch 렌더링 ────────────────────────────────────
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // 배경
+        // 1. 배경 (시계판 없는 버전)
         batch.setColor(Color.WHITE);
         batch.draw(background, 0, 0, 1280, 720);
 
+        // 2. 시계 바늘
+
+        // 3. 몬스터
         TextureRegion monsterFrame = monsterAnim.getKeyFrame(stateTime);
         float half = ENEMY_DRAW_SIZE / 2f;
         for (Enemy e : world.getEnemies()) {
@@ -69,7 +97,7 @@ public class Renderer {
 
         batch.end();
 
-        // ── 도형 렌더링 (ShapeRenderer) ──────────────────────────
+        // ── ShapeRenderer 렌더링 ─────────────────────────────────
         shape.setProjectionMatrix(camera.combined);
         shape.begin(ShapeRenderer.ShapeType.Filled);
 
@@ -78,6 +106,15 @@ public class Renderer {
         if (player.alive) {
             shape.setColor(Color.WHITE);
             shape.rect(player.x - 12, player.y - 12, 24, 24);
+
+            // 궤도 검 (SWORD)
+            drawOrbitSword(shape, player.getWeapon(), player.x, player.y, 1.0f);
+        }
+
+        // 잔상의 궤도 검
+        for (Ghost ghost : world.getGhosts()) {
+            float alpha = 0.3f + 0.5f * (ghost.loopIndex / (float) Math.max(1, world.getCurrentLoop()));
+            drawOrbitSword(shape, ghost.getWeapon(), ghost.x, ghost.y, alpha);
         }
 
         // 투사체
@@ -89,6 +126,13 @@ public class Renderer {
         shape.end();
     }
 
+    private void drawOrbitSword(ShapeRenderer sr, Weapon weapon, float ownerX, float ownerY, float alpha) {
+        if (!(weapon instanceof Weapon.SwordWeapon sword)) return;
+        sr.setColor(0.9f, 0.8f, 0.3f, alpha);          // 금빛
+        sr.rectLine(ownerX, ownerY, sword.swordX, sword.swordY, 3f);  // 자루~검 끝 선
+        sr.circle(sword.swordX, sword.swordY, 8f);      // 검 끝 원형 표시
+    }
+
     public void resize(int width, int height) {
         camera.viewportWidth  = width;
         camera.viewportHeight = height;
@@ -98,6 +142,7 @@ public class Renderer {
     public void dispose() {
         shape.dispose();
         background.dispose();
+        clockHandTex.dispose();
         monsterSheet.dispose();
     }
 }

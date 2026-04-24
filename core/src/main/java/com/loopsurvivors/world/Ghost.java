@@ -1,5 +1,6 @@
 package com.loopsurvivors.world;
 
+import com.badlogic.gdx.math.Vector2;
 import com.loopsurvivors.combat.ClassType;
 import com.loopsurvivors.combat.Weapon;
 import com.loopsurvivors.loop.GhostReplayer;
@@ -15,9 +16,11 @@ public class Ghost {
 
     private final GhostReplayer replayer;
     private final Weapon weapon;
-    private int attackCooldown = 0;
-    private static final int ATTACK_CD_TICKS = 20;
     private static final float MOVE_SPEED = 150f;
+
+    // 입력 없는 상태를 나타내는 재사용 프레임 (정지 모드용)
+    private static final InputFrame IDLE_FRAME =
+        new InputFrame(0, new Vector2(0, 0), false, false);
 
     public Ghost(float startX, float startY, ClassType classType, int loopIndex, LoopRecording recording) {
         this.x = startX; this.y = startY;
@@ -28,22 +31,17 @@ public class Ghost {
     }
 
     public void tick(World world) {
-        if (attackCooldown > 0) attackCooldown--;
-
         InputFrame frame = replayer.next();
+
         if (frame != null) {
             x += frame.moveDir().x * MOVE_SPEED / 60f;
             y += frame.moveDir().y * MOVE_SPEED / 60f;
-            if (frame.attackPressed() && attackCooldown == 0) {
-                weapon.attack(x, y, world);
-                attackCooldown = ATTACK_CD_TICKS;
-            }
+            weapon.tick(x, y, world, frame);
         } else {
-            // 정지 모드: 근거리 적만 공격
-            if (attackCooldown == 0) {
-                weapon.attackNearest(x, y, world);
-                attackCooldown = ATTACK_CD_TICKS;
-            }
+            // 정지 모드: 제자리에서 무기만 계속 동작
+            weapon.tick(x, y, world, IDLE_FRAME);
         }
     }
+
+    public Weapon getWeapon() { return weapon; }
 }
