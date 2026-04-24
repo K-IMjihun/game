@@ -220,4 +220,27 @@
 
 
 
-     JAVA_HOME="C:/Program Files/Java/jdk-17" ./gradlew desktop:run
+
+--- 이미지 생성용
+
+ ---
+  SWORD (칼잡이)
+  2D game character sprite sheet, pixel art, side view,
+  warrior with sword and red armor,
+  1 row 4 columns, 64x64 per frame, walk cycle 4 frames,
+  character facing right, legs and arms moving,
+  transparent background, dark fantasy style
+
+  BOW (궁수)
+  2D game character sprite sheet, pixel art, side view,
+  archer with bow and green cloak,
+  1 row 4 columns, 64x64 per frame, walk cycle 4 frames,
+  character facing right, legs and arms moving,
+  transparent background, dark fantasy style
+
+  HEAL (버퍼)
+  2D game character sprite sheet, pixel art, side view,
+  healer with staff and blue robe, glowing aura,
+  1 row 4 columns, 64x64 per frame, walk cycle 4 frames,
+  character facing right, legs and arms moving,
+  transparent background, dark fantasy style
