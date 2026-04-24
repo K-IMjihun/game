@@ -51,7 +51,7 @@ public abstract class Weapon {
             for (Enemy e : world.getEnemies()) {
                 if (!e.alive) continue;
                 if (dst(swordX, swordY, e.x, e.y) < HIT_RADIUS + 14f) {
-                    e.takeDamage(dmg);
+                    e.takeDamage(dmg, world);
                 }
             }
         }

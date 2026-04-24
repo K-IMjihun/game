@@ -37,8 +37,9 @@ public class Enemy {
         }
     }
 
-    public void takeDamage(float damage) {
+    public void takeDamage(float damage, World world) {
         hp -= damage;
+        world.addDamageNumber(x, y + 20f, damage);
         if (hp <= 0) alive = false;
     }
 }

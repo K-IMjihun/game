@@ -9,7 +9,10 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.loopsurvivors.combat.Weapon;
+import com.loopsurvivors.world.DamageNumber;
 import com.loopsurvivors.world.Enemy;
 import com.loopsurvivors.world.Ghost;
 import com.loopsurvivors.world.Player;
@@ -40,6 +43,10 @@ public class Renderer {
     private final Animation<TextureRegion> monsterAnim;
     private float stateTime = 0f;
 
+    // 데미지 숫자 폰트
+    private final BitmapFont  dmgFont;
+    private final GlyphLayout glyphLayout = new GlyphLayout();
+
     // 시계 바늘: 1초마다 1칸(6°), 60초 = 1회전
     private float clockElapsed = 0f;
     private int   clockTick    = 0;  // 0~59
@@ -62,6 +69,9 @@ public class Renderer {
         TextureRegion[]   frames = {grid[0][0], grid[0][1], grid[1][0], grid[1][1]};
         monsterAnim = new Animation<>(FRAME_DURATION, frames);
         monsterAnim.setPlayMode(Animation.PlayMode.LOOP);
+
+        dmgFont = new BitmapFont();
+        dmgFont.getData().setScale(1.8f);
     }
 
     public void render(World world) {
@@ -93,6 +103,16 @@ public class Renderer {
         float half = ENEMY_DRAW_SIZE / 2f;
         for (Enemy e : world.getEnemies()) {
             if (e.alive) batch.draw(monsterFrame, e.x - half, e.y - half, ENEMY_DRAW_SIZE, ENEMY_DRAW_SIZE);
+        }
+
+        // 4. 데미지 숫자
+        for (DamageNumber d : world.getDamageNumbers()) {
+            if (!d.active) continue;
+            dmgFont.setColor(1f, 0.9f, 0.2f, d.alpha());   // 노란색, 시간 지날수록 투명
+            glyphLayout.setText(dmgFont, d.text);
+            dmgFont.draw(batch, d.text,
+                d.x - glyphLayout.width / 2f,   // 가로 중앙 정렬
+                d.y);
         }
 
         batch.end();
@@ -144,5 +164,6 @@ public class Renderer {
         background.dispose();
         clockHandTex.dispose();
         monsterSheet.dispose();
+        dmgFont.dispose();
     }
 }

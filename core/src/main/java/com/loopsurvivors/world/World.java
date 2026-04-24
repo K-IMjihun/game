@@ -15,7 +15,8 @@ public class World {
     private Player player;
     private final List<Ghost> ghosts = new ArrayList<>();
     private final List<Enemy> enemies = new ArrayList<>();
-    private final List<Projectile> projectiles = new ArrayList<>();
+    private final List<Projectile>   projectiles   = new ArrayList<>();
+    private final List<DamageNumber> damageNumbers = new ArrayList<>();
 
     private final LoopRecorder recorder = new LoopRecorder();
     private BonusSet bonusSet = new BonusSet();
@@ -39,6 +40,9 @@ public class World {
         projectiles.removeIf(p -> !p.active);
         for (Projectile p : new ArrayList<>(projectiles)) p.tick(this);
         enemies.removeIf(e -> !e.alive);
+
+        damageNumbers.removeIf(d -> !d.active);
+        for (DamageNumber d : new ArrayList<>(damageNumbers)) d.tick();
     }
 
     /**
@@ -58,13 +62,17 @@ public class World {
         player.y = 360f;
     }
 
-    public void addProjectile(Projectile p) { projectiles.add(p); }
-    public void addEnemy(Enemy e)           { enemies.add(e); }
+    public void addProjectile(Projectile p)             { projectiles.add(p); }
+    public void addEnemy(Enemy e)                       { enemies.add(e); }
+    public void addDamageNumber(float x, float y, float damage) {
+        damageNumbers.add(new DamageNumber(x, y, damage));
+    }
 
     public Player            getPlayer()      { return player; }
     public List<Ghost>       getGhosts()      { return ghosts; }
     public List<Enemy>       getEnemies()     { return enemies; }
-    public List<Projectile>  getProjectiles() { return projectiles; }
+    public List<Projectile>   getProjectiles()   { return projectiles; }
+    public List<DamageNumber> getDamageNumbers() { return damageNumbers; }
     public BonusSet          getBonusSet()    { return bonusSet; }
     public int               getTickCount()   { return tickCount; }
     public int               getCurrentLoop() { return currentLoop; }
