@@ -28,10 +28,11 @@ public abstract class Weapon {
 
     public static class SwordWeapon extends Weapon {
 
-        private static final float ORBIT_RADIUS  = 55f;   // 플레이어 중심~검 거리 (px)
-        private static final float ORBIT_SPEED   = 90f;   // 회전 속도 (도/초) — 4초에 1바퀴
-        private static final float HIT_RADIUS    = 18f;   // 검 충돌 반경
-        private static final float DAMAGE_PER_SEC = 25f;  // 초당 데미지
+        private static final float ORBIT_RADIUS = 55f;   // 플레이어 중심~검 거리 (px)
+        private static final float ORBIT_SPEED  = 90f;   // 회전 속도 (도/초) — 4초에 1바퀴
+        private static final float HIT_RADIUS   = 18f;   // 검 충돌 반경
+        // 0.1초(6틱) 쿨다운 기준 1회 적용 데미지 (초당 25 DPS 유지)
+        private static final float DAMAGE_PER_HIT = 25f * 0.1f;  // = 2.5
 
         /** 현재 검 위치 (Renderer에서 읽어 시각화) */
         public float swordX, swordY;
@@ -46,12 +47,12 @@ public abstract class Weapon {
             swordX = x + ORBIT_RADIUS * MathUtils.cosDeg(angle);
             swordY = y + ORBIT_RADIUS * MathUtils.sinDeg(angle);
 
-            // 검에 닿는 적 데미지
-            float dmg = DAMAGE_PER_SEC / 60f * world.getBonusSet().damageMultiplier;
+            // 검에 닿는 적 데미지 (적의 hitCooldown이 0일 때만 실제 적용됨)
+            float dmg = DAMAGE_PER_HIT * world.getBonusSet().damageMultiplier;
             for (Enemy e : world.getEnemies()) {
                 if (!e.alive) continue;
                 if (dst(swordX, swordY, e.x, e.y) < HIT_RADIUS + 14f) {
-                    e.takeDamage(dmg, world);
+                    e.takeDamage(dmg, swordX, swordY, world);
                 }
             }
         }

@@ -28,7 +28,7 @@ public class Projectile {
             if (!e.alive) continue;
             float dx = e.x - x, dy = e.y - y;
             if (Math.sqrt(dx * dx + dy * dy) < 16f) {
-                e.takeDamage(damage, world);
+                e.takeDamage(damage, x, y, world);
                 if (--piercing < 0) { active = false; return; }
             }
         }
